@@ -1,0 +1,4 @@
+# You don't get my voice for free bucko
+audio/**/*.wav
+# no random model files
+models
