@@ -1,6 +1,13 @@
 \documentclass[12pt]{article}
 
 \usepackage[letterpaper, portrait, top=1in, left=1in, right=1in, bottom=1in]{geometry}
+\usepackage{graphicx}
+\usepackage[export]{adjustbox}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{wrapfig}
+
+\captionsetup[figure]{font=small,labelfont=small}
 
 \title{Speech Source Separation\\
 \large I547 Final Project}
@@ -45,6 +52,13 @@ speech contains numerous many and periods of silence, which would force the mode
 regions. Second, voice data occupies only a small part of the full frequency spectrum, meaning that many frequency
 bins contain negligible energy that provides no useful information for speaker separation.
 
+
+\begin{wrapfigure}{r}{0.5\textwidth}
+  \includegraphics[width=0.9\linewidth]{demo/plots/matei-high-low-mod-plot.png}
+  \caption{Sum of STFT modulus per FFT bin for a low voice (green) and a high voice (red).}
+  \label{fig:wrapfig}
+\end{wrapfigure}
+
 To address these issues with my training set, I cleaned the audio data. Only STFT frames where the mean modulus
 exceeded a certain threshold were kept, which ensured that the model trained only on frames containing actual
 speech content. Additionally, the frequency range was restricted to the first 50 bins (with N=1024 FFT points),
@@ -80,6 +94,81 @@ speaker. The audio signal can then be recovered using an inverse STFT.
 The model's separation performance was evaluated across three test scenarios, with performance strongly correlated
 to the degree of frequency overlap between sources. The scenarios tested were: me speaking with a high voice and
 a low voice, my high voice with baby crying, and my low voice with baby crying.
+
+\begin{figure}[htbp]
+  \begin{subfigure}{0.48\textwidth}
+    \includegraphics[width=1.0\linewidth, height=6cm]{demo/plots/matei-high-low-spectrogram-report.png} 
+    \caption{Spectrogram of my high voice (red) and my low voice (green).}
+    \label{fig:subim1}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.48\textwidth}
+    \includegraphics[width=1.0\linewidth, height=6cm]{demo/plots/matei-high-low-predict-plot.png}
+    \caption{Average modulus percent contribution for predicted bins for my high and low voice.}
+    \label{fig:subim2}
+  \end{subfigure}
+  \caption{Results for voice separation between my high voice and my low voice.}
+  \label{fig:image2}
+\end{figure}
+
+The most challenging scenario proved to be the separation of my high and low voice. Despite my best efforts
+to differentiate my two voices, significant overlap remained in the frequency domain. In the separated audio,
+individual words remained intelligible, and the model's attempt to dampen out the other voice was somewhat
+perceptible. However, substantial bleed-through from the other speaker still was audible in the two audios.
+
+\begin{figure}[htbp]
+  \begin{subfigure}{0.48\textwidth}
+    \includegraphics[width=1.0\linewidth, height=6cm]{demo/plots/matei-high-crying-spectrogram-report.png} 
+    \caption{Spectrogram of my high voice (red) and a crying baby (green).}
+    \label{fig:subim1}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.48\textwidth}
+    \includegraphics[width=1.0\linewidth, height=6cm]{demo/plots/matei-high-crying-predict-plot.png}
+    \caption{Average modulus percent contribution for predicted bins for my high voice and a crying baby.}
+    \label{fig:subim2}
+  \end{subfigure}
+  \caption{Results for voice separation between my high voice and a crying baby.}
+  \label{fig:image2}
+\end{figure}
+ 
+The combination of high voice with baby crying showed moderate improvement. There was still a little bit
+of bleed through in the separated audio, but the words were much clearer and easier to understand.
+
+\begin{figure}[htbp]
+  \begin{subfigure}{0.48\textwidth}
+    \includegraphics[width=1.0\linewidth, height=6cm]{demo/plots/matei-low-crying-spectrogram-report.png} 
+    \caption{Spectrogram of my low voice (red) and a crying baby (green).}
+    \label{fig:subim1}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}{0.48\textwidth}
+    \includegraphics[width=1.0\linewidth, height=6cm]{demo/plots/matei-low-crying-predict-plot.png}
+    \caption{Average modulus percent contribution for predicted bins for my low voice and a crying baby.}
+    \label{fig:subim2}
+  \end{subfigure}
+  \caption{Results for voice separation between my low voice and a crying baby.}
+  \label{fig:image2}
+\end{figure}
+
+My low voice combined with the crying baby had the best results in terms of source separation. Due to the
+very minimal overlap in FFT bins, the model was able to make much stronger predictions for speaker separation,
+and the resulting audio had little to no bleed through from the other speaker.
+
+\section{Discussion}
+
+This project really showed me how difficult source separation can be. Looking back now, there are a few
+limitations that my approach placed on my model's ability to accurately separate speech. The model was trained
+using only FFT magnitude, discarding phase information that could help distinguish overlapping sources.
+Providing richer training data, including phase or alternative audio representations, could improve separation
+quality.
+
+I also only trained the model on one STFT frame at a time. Providing the model with a window of frames at once
+would give it more temporal context and allow for more accurate predictions.
+
+My most important takeaway from this project, however, is that a cup of applesauce with a pinch of straw,
+fourteen oysters: seven cooked and seven raw, beaten to a frazzle with a special frazzle spade, then poured
+into a rubber boot half filled with lemonade makes for the best tasting glunker stew.
 
 \end{document}
 
