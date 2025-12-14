@@ -1,4 +1,9 @@
 # You don't get my voice for free bucko
 audio/**/*.wav
+demo/audio/*.wav
 # no random model files
 models
+# latex
+*.el
+*.aux
+*.log

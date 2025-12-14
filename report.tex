@@ -1,0 +1,90 @@
+\documentclass[12pt]{article}
+
+\usepackage[letterpaper, portrait, top=1in, left=1in, right=1in, bottom=1in]{geometry}
+
+\title{Speech Source Separation\\
+\large I547 Final Project}
+\author{Matei Cloteaux}
+\date{December 16, 2025}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+Source separation is the process of separating one mixed signal into a set of source signals. Source
+separation is a technique that is used on many different types of signals, including audio recordings,
+images, and EEG data. When little information is known about the source signals, the probelm becomes
+blind source separation, which is a difficult challenge for digital systems and is an active area of
+research.
+
+Voice audio data is especially challenging for source separation. Unlike musical recordings where a score
+might provide guidance, voice separation must work with the unpredictable nature of human speech. Due to
+this difficulty, modern approaches to voice source separation rely on deep neural networks as a solution.
+
+\section{Method}
+
+\subsection{Overview}
+
+I approached voice source separation by classifying time-frequency points in the STFT of the speech audio.
+The combined audio signals are first transformed using the Short Time Fourier Transform (STFT), which
+represents the combined audio as a matrix of time-frequency points. Each point in the combined matrix is
+then labeled according to which speaker predominantly contributes to that point, speaker 1 or speaker 2.
+This classification is made to be not strictly binary, which allows some points to be labeled as 75\% speaker
+1 and 25\% speaker 2 for example.
+
+A neural network is then training on this classified matrix, learning to recognize the patterns that distinguish
+the speakers from each other. Once trained, the model is given a test combined audio that it wasn't trained
+with, and the model predicts the time-frequency percentage contributions for the two speakers.
+
+\subsection{Data Preprocessing}
+
+Raw speech audio presents two mmain challenges for training an effective separation model. First, natural
+speech contains numerous many and periods of silence, which would force the model to classify meaningless quiet
+regions. Second, voice data occupies only a small part of the full frequency spectrum, meaning that many frequency
+bins contain negligible energy that provides no useful information for speaker separation.
+
+To address these issues with my training set, I cleaned the audio data. Only STFT frames where the mean modulus
+exceeded a certain threshold were kept, which ensured that the model trained only on frames containing actual
+speech content. Additionally, the frequency range was restricted to the first 50 bins (with N=1024 FFT points),
+which allowed the model to focus on only the frequency range where voice characteristics are visible.
+
+This preprocessing strategy raises an important question: if the model trains only on reduced and filtered frames,
+how can it accurately predict on full audio? The solution lies in applying different strategies during training
+versus during prediction. During training, the model learns from frames with substantial energy above the
+threshold. During prediction, however, the model processes every frame in the mixed audio. Frames that fall
+below the energy threshold are inherently quiet, so even if the model makes incorrect classifications for these
+frames, the perceptual impact is minimal because the frames are already quiet. Similarly, predictions are only
+generated for frequency bins below the established threshold, with higher bins set to zero since they contain
+negligible voice information.
+
+While this preprocessing approach does lead to somewhat distorted audio, the speech is still intelligible, which
+is the main motivation of this project.
+
+\subsection{Model Architecture and Implementation}
+
+In this project I explored both dense fully connected networks and convolutional neural networks (CNN). While most
+modern approaches to voice source separation rely on CNNs, I found that both architectures achieved similar
+accuracies of approximately 75\%. This is likely due to how little data I was using to train my model, which was
+about 5-10 minutes of speech data. Again, due to my small training dataset, I used a relatively shallow 3-layer
+network architecture to help avoid model overfitting.
+
+The model generates two output matrices where each matrix contains percentage values corresponding to the percent
+contribution for every time-frequency point in the STFT representation for each speaker. To separate a combined
+audio signal, you multiply those matrices with the STFT of the combined audio to get a new STFT matrix for each
+speaker. The audio signal can then be recovered using an inverse STFT.
+
+\section{Results}
+
+The model's separation performance was evaluated across three test scenarios, with performance strongly correlated
+to the degree of frequency overlap between sources. The scenarios tested were: me speaking with a high voice and
+a low voice, my high voice with baby crying, and my low voice with baby crying.
+
+\end{document}
+
+
+%%% Local Variables:
+%%% mode: LaTeX
+%%% TeX-master: t
+%%% End:
